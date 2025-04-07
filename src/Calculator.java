@@ -26,6 +26,7 @@ public class Calculator {
             1 - ввести пример
             2 - посмотреть историю
             3 - очистить историю""");
+
     int userChoice = scan.nextInt();
 
     FileManager fileManager = new FileManager();
@@ -45,7 +46,11 @@ public class Calculator {
             mathExample = (throwBrackets(mathExample));
           }
           mathExample = calculate(mathExample);
-          System.out.println(inputMathExample + " = " + mathExample);
+
+          String result = inputMathExample + " = " + mathExample;
+
+          fileManager.writeToFile("history.txt", result);
+          System.out.println(result);
         } catch (Exception ex) {
           fileManager.writeToFile("log.txt", ex.getMessage());
           System.out.println(ex.getMessage());
@@ -96,7 +101,6 @@ public class Calculator {
     if (openBracketCounter != closeBracketCounter) {
       isValid = false;
     }
-
     if (!isValid) {
       throw new InvalidTypeException("Incorrect math example");
     }
@@ -117,11 +121,13 @@ public class Calculator {
     for (int i = 0; i < sb.length(); i++) {
       if (sb.charAt(i) == '(') {
         openBracketIndex = i;
-      }
-      else if (sb.charAt(i) == ')') {
+      } else if (sb.charAt(i) == ')') {
         closeBracketIndex = i;
+
         String examplePart = sb.substring(openBracketIndex + 1, closeBracketIndex);
+
         calculate(examplePart);
+        
         sb.replace(openBracketIndex, closeBracketIndex + 1, calculate(examplePart));
         i = -1;
       }
@@ -140,41 +146,33 @@ public class Calculator {
     while (splitMathExample.stream().count() > 1) {
       if (splitMathExample.contains(POWER)) {
         splitMathExample = performOperation(splitMathExample, POWER);
-      }
-      else if (splitMathExample.contains(MULTIPLICATION) && !splitMathExample.contains(DIVIDE)) {
+      } else if (splitMathExample.contains(MULTIPLICATION) && !splitMathExample.contains(DIVIDE)) {
         splitMathExample = performOperation(splitMathExample, MULTIPLICATION);
-      }
-      else if (splitMathExample.contains(DIVIDE) && !splitMathExample.contains(MULTIPLICATION)) {
+      } else if (splitMathExample.contains(DIVIDE) && !splitMathExample.contains(MULTIPLICATION)) {
         splitMathExample = performOperation(splitMathExample, DIVIDE);
-      }
-      else if (splitMathExample.contains(MULTIPLICATION) && splitMathExample.contains(DIVIDE)) {
+      } else if (splitMathExample.contains(MULTIPLICATION) && splitMathExample.contains(DIVIDE)) {
         if (splitMathExample.indexOf(MULTIPLICATION) < splitMathExample.indexOf(DIVIDE)) {
           splitMathExample = performOperation(splitMathExample, MULTIPLICATION);
-        }
-        else if (splitMathExample.indexOf(DIVIDE) < splitMathExample.indexOf(MULTIPLICATION)) {
+        } else if (splitMathExample.indexOf(DIVIDE) < splitMathExample.indexOf(MULTIPLICATION)) {
           splitMathExample = performOperation(splitMathExample, DIVIDE);
         }
-      }
-      else if (splitMathExample.contains(PLUS) && !splitMathExample.contains(MINUS)) {
+      } else if (splitMathExample.contains(PLUS) && !splitMathExample.contains(MINUS)) {
         splitMathExample = performOperation(splitMathExample, PLUS);
-      }
-      else if (splitMathExample.contains(MINUS) && !splitMathExample.contains(PLUS)) {
+      } else if (splitMathExample.contains(MINUS) && !splitMathExample.contains(PLUS)) {
         splitMathExample = performOperation(splitMathExample, MINUS);
-      }
-      else if (splitMathExample.contains(PLUS) && splitMathExample.contains(MINUS)) {
+      } else if (splitMathExample.contains(PLUS) && splitMathExample.contains(MINUS)) {
         if (splitMathExample.indexOf(PLUS) < splitMathExample.indexOf(MINUS)) {
           splitMathExample = performOperation(splitMathExample, PLUS);
-        }
-        else if (splitMathExample.indexOf(MINUS) < splitMathExample.indexOf(PLUS)) {
+        } else if (splitMathExample.indexOf(MINUS) < splitMathExample.indexOf(PLUS)) {
           splitMathExample = performOperation(splitMathExample, MINUS);
         }
       }
     }
 
-    String mathExampleResult = mathExample + " = " + splitMathExample.get(0);
+    /*String mathExampleResult = mathExample + " = " + splitMathExample.get(0);
 
     FileManager fileManager = new FileManager();
-    fileManager.writeToFile("history.txt", mathExampleResult);
+    fileManager.writeToFile("history.txt", mathExampleResult);*/
 
     return splitMathExample.get(0);
   }
@@ -194,18 +192,21 @@ public class Calculator {
     double operationResult = 0;
 
     switch (mathOperation) {
-      case POWER:
+      case POWER: {
         operationResult = Math.pow(leftNumber, rightNumber);
         modifyMathExample(mathExample, operationResult, index);
         break;
-      case MULTIPLICATION:
+      }
+      case MULTIPLICATION: {
         operationResult = leftNumber * rightNumber;
         modifyMathExample(mathExample, operationResult, index);
         break;
-      case DIVIDE:
+      }
+      case DIVIDE: {
         if (rightNumber == 0) {
           throw new IllegalArgumentException("Division by 0");
         }
+      }
         operationResult = leftNumber / rightNumber;
         modifyMathExample(mathExample, operationResult, index);
         break;
@@ -213,10 +214,11 @@ public class Calculator {
         operationResult = leftNumber + rightNumber;
         modifyMathExample(mathExample, operationResult, index);
         break;
-      case MINUS:
+      case MINUS: {
         operationResult = leftNumber - rightNumber;
         modifyMathExample(mathExample, operationResult, index);
         break;
+      }
     }
     return mathExample;
   }
